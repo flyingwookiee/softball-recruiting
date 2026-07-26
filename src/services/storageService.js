@@ -7,7 +7,8 @@ const STORAGE_KEYS = {
   TARGET_COLLEGES: 'softball_recruiting_targets_v1',
   GEMINI_API_KEY: 'softball_recruiting_gemini_key_v1',
   CHECKLIST_PROGRESS: 'softball_recruiting_checklist_v1',
-  SAVED_SCHOLARSHIPS: 'softball_recruiting_scholarships_v1'
+  SAVED_SCHOLARSHIPS: 'softball_recruiting_scholarships_v1',
+  JOURNAL_NOTES: 'softball_recruiting_notes_v1'
 };
 
 const initialTargets = [
@@ -46,6 +47,33 @@ const initialScholarships = [
   {
     ...scholarshipsDatabase[7], // Alaska Performance Scholarship
     status: 'Awarded'
+  }
+];
+
+const initialNotes = [
+  {
+    id: "note-1",
+    title: "UT Tyler Nursing & Softball Call Notes",
+    category: "Coach Notes",
+    content: "Coach Reed emphasized that Lone Star D2 coaches can evaluate hitting videos sent by sophomores! Asked about their BSN Nursing clinical placement sites. They have strong hospital partnerships in East Texas.",
+    pinned: true,
+    createdDate: "Oct 15, 2025"
+  },
+  {
+    id: "note-2",
+    title: "2-Year GI Bill + HRSA Nurse Corps Stacking Strategy",
+    category: "Goals & Ideas",
+    content: "Dad mentioned 2 years of transferred GI Bill. If I combine GI Bill with the HRSA Nurse Corps scholarship or D2 softball partial athletic aid, all 4 years of college + BSN Nursing school will be 100% paid for!",
+    pinned: true,
+    createdDate: "Oct 18, 2025"
+  },
+  {
+    id: "note-3",
+    title: "Regis University Denver Campus Impressions",
+    category: "Nursing Programs",
+    content: "Love the Loretto Heights School of Nursing at Regis in Denver! D2 RMAC conference allows great competitive play while doing clinical rotations in Denver hospitals.",
+    pinned: false,
+    createdDate: "Nov 02, 2025"
   }
 ];
 
@@ -134,6 +162,24 @@ export const storageService = {
       localStorage.setItem(STORAGE_KEYS.SAVED_SCHOLARSHIPS, JSON.stringify(scholarships));
     } catch (e) {
       console.error("Error saving scholarships", e);
+    }
+  },
+
+  // Journal Notes
+  getNotes: () => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.JOURNAL_NOTES);
+      return saved ? JSON.parse(saved) : initialNotes;
+    } catch (e) {
+      return initialNotes;
+    }
+  },
+
+  saveNotes: (notes) => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.JOURNAL_NOTES, JSON.stringify(notes));
+    } catch (e) {
+      console.error("Error saving notes", e);
     }
   },
 

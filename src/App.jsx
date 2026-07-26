@@ -14,13 +14,14 @@ import { EmailComposer } from './components/Dashboard/EmailComposer';
 import { SophomoreRoadmap } from './components/Dashboard/SophomoreRoadmap';
 import { ProfileEditor } from './components/Dashboard/ProfileEditor';
 import { ScholarshipTracker } from './components/Dashboard/ScholarshipTracker';
+import { NotesJournal } from './components/Dashboard/NotesJournal';
 
 import { GeminiChatModal } from './components/AIAssistant/GeminiChatModal';
 
 import { storageService } from './services/storageService';
 import { sophomoreRecruitingTimeline } from './data/recruitingRules';
 
-import { Target, Search, Mail, CheckSquare, Edit3, Sparkles, DollarSign } from 'lucide-react';
+import { Target, Search, Mail, CheckSquare, Edit3, Sparkles, DollarSign, BookOpen } from 'lucide-react';
 
 export function App() {
   // Theme State ('dark' | 'light' | 'spacex')
@@ -28,7 +29,7 @@ export function App() {
 
   // Navigation & View States
   const [activeView, setActiveView] = useState('public'); // 'public' | 'dashboard'
-  const [dashboardTab, setDashboardTab] = useState('crm'); // 'crm' | 'finder' | 'email' | 'roadmap' | 'scholarships' | 'editor'
+  const [dashboardTab, setDashboardTab] = useState('crm'); // 'crm' | 'finder' | 'scholarships' | 'journal' | 'email' | 'roadmap' | 'editor'
 
   // Application Data States
   const [athlete, setAthlete] = useState(storageService.getProfile());
@@ -36,6 +37,7 @@ export function App() {
   const [apiKey, setApiKey] = useState(storageService.getApiKey());
   const [checklist, setChecklist] = useState(storageService.getChecklist(sophomoreRecruitingTimeline.checklist));
   const [savedScholarships, setSavedScholarships] = useState(storageService.getSavedScholarships());
+  const [notes, setNotes] = useState(storageService.getNotes());
 
   // Selection & Modal States
   const [selectedCollegeForEmail, setSelectedCollegeForEmail] = useState(null);
@@ -80,7 +82,7 @@ export function App() {
     setTargets(updated);
   };
 
-  // Scholarship Persistence Handlers
+  // Scholarship Handlers
   const handleSaveScholarship = (sch) => {
     if (savedScholarships.some(s => s.id === sch.id)) return;
     const updated = [{ ...sch, status: 'Not Applied' }, ...savedScholarships];
@@ -98,6 +100,25 @@ export function App() {
     const updated = savedScholarships.map(s => s.id === schId ? { ...s, status } : s);
     setSavedScholarships(updated);
     storageService.saveScholarships(updated);
+  };
+
+  // Journal Notes Handlers
+  const handleAddNote = (newNote) => {
+    const updated = [newNote, ...notes];
+    setNotes(updated);
+    storageService.saveNotes(updated);
+  };
+
+  const handleUpdateNote = (updatedNote) => {
+    const updated = notes.map(n => n.id === updatedNote.id ? updatedNote : n);
+    setNotes(updated);
+    storageService.saveNotes(updated);
+  };
+
+  const handleDeleteNote = (noteId) => {
+    const updated = notes.filter(n => n.id !== noteId);
+    setNotes(updated);
+    storageService.saveNotes(updated);
   };
 
   const handleSaveApiKey = (key) => {
@@ -207,6 +228,7 @@ export function App() {
                 { id: 'crm', label: 'My Target CRM', icon: Target, count: targets.length },
                 { id: 'finder', label: 'College Directory', icon: Search },
                 { id: 'scholarships', label: 'Scholarships & GI Bill', icon: DollarSign, count: savedScholarships.length },
+                { id: 'journal', label: 'Journal & Notes', icon: BookOpen, count: notes.length },
                 { id: 'email', label: 'Email Builder', icon: Mail },
                 { id: 'roadmap', label: 'Sophomore Roadmap', icon: CheckSquare },
                 { id: 'editor', label: 'Edit Profile & Stats', icon: Edit3 }
@@ -267,6 +289,16 @@ export function App() {
               />
             )}
 
+            {dashboardTab === 'journal' && (
+              <NotesJournal
+                notes={notes}
+                onAddNote={handleAddNote}
+                onUpdateNote={handleUpdateNote}
+                onDeleteNote={handleDeleteNote}
+                onConsultAi={handleConsultAiForSchool}
+              />
+            )}
+
             {dashboardTab === 'email' && (
               <EmailComposer
                 athlete={athlete}
@@ -301,7 +333,7 @@ export function App() {
             🥎 <strong>{athlete.name} Softball Recruiting Platform</strong> &bull; Class of {athlete.gradYear} ({athlete.highSchool})
           </p>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.78rem', marginTop: '4px' }}>
-            Academic Focus: Nursing (BSN) &bull; GI Bill & Scholarship Funding Planner Included
+            Academic Focus: Nursing (BSN) &bull; Journal & Strategy Notes Hub Included
           </p>
         </div>
       </footer>
