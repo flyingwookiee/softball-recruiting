@@ -22,8 +22,8 @@ import { sophomoreRecruitingTimeline } from './data/recruitingRules';
 import { Target, Search, Mail, CheckSquare, Edit3, Sparkles } from 'lucide-react';
 
 export function App() {
-  // Theme State ('mustangs' | 'arsenal' | 'cyber')
-  const [theme, setTheme] = useState(() => localStorage.getItem('softball_theme_v1') || 'mustangs');
+  // Theme State ('dark' | 'light' | 'spacex')
+  const [theme, setTheme] = useState(() => localStorage.getItem('softball_theme_v2') || 'dark');
 
   // Navigation & View States
   const [activeView, setActiveView] = useState('public'); // 'public' | 'dashboard'
@@ -43,7 +43,7 @@ export function App() {
   // Apply Theme to document root
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('softball_theme_v1', theme);
+    localStorage.setItem('softball_theme_v2', theme);
   }, [theme]);
 
   // Direct trigger to jump straight to Profile Editor
@@ -56,6 +56,11 @@ export function App() {
   const handleSaveProfile = (updatedProfile) => {
     setAthlete(updatedProfile);
     storageService.saveProfile(updatedProfile);
+  };
+
+  const handleUpdateTargets = (updatedTargets) => {
+    setTargets(updatedTargets);
+    storageService.saveTargets(updatedTargets);
   };
 
   const handleAddTarget = (college) => {
@@ -111,20 +116,20 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="container" style={{ flex: 1, padding: '32px 24px' }}>
+      <main className="container" style={{ flex: 1, padding: '36px 24px' }}>
         
         {/* ==================== VIEW 1: PUBLIC ATHLETE PROFILE ==================== */}
         {activeView === 'public' && (
           <div className="animate-fade-in">
             
             {/* Public Coach Banner */}
-            <div style={{ background: 'var(--primary-glow)', border: '1px solid var(--primary)', padding: '12px 20px', borderRadius: 'var(--radius-md)', marginBottom: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-              <div style={{ fontSize: '0.88rem', color: 'var(--text-main)', fontWeight: 600 }}>
-                🌐 <strong>Public Coach View</strong>: Showcase profile for college recruiters evaluating film & stats.
+            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', padding: '14px 24px', borderRadius: 'var(--radius-md)', marginBottom: '28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 600 }}>
+                🌐 <strong>Public Coach View</strong>: Showcase profile for college recruiters evaluating film, stats & Nursing academics.
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={handleOpenProfileEditor} className="btn btn-outline btn-sm" style={{ borderColor: 'var(--primary)', color: 'var(--primary)' }}>
-                  <Edit3 size={15} /> Edit Profile Data
+                <button onClick={handleOpenProfileEditor} className="btn btn-secondary btn-sm">
+                  <Edit3 size={15} /> Edit Profile
                 </button>
                 <button onClick={() => setActiveView('dashboard')} className="btn btn-primary btn-sm">
                   Switch to Dashboard
@@ -192,16 +197,17 @@ export function App() {
                     onClick={() => setDashboardTab(tab.id)}
                     className="btn btn-sm"
                     style={{
-                      background: isActive ? 'var(--primary-gradient)' : 'rgba(255,255,255,0.04)',
-                      color: isActive ? '#ffffff' : 'var(--text-muted)',
+                      background: isActive ? 'var(--text-main)' : 'var(--bg-surface)',
+                      color: isActive ? 'var(--bg-main)' : 'var(--text-muted)',
                       border: isActive ? 'none' : '1px solid var(--border-color)',
-                      whiteSpace: 'nowrap'
+                      whiteSpace: 'nowrap',
+                      fontWeight: isActive ? 700 : 500
                     }}
                   >
                     <IconComp size={16} />
                     {tab.label}
                     {tab.count !== undefined && (
-                      <span style={{ background: isActive ? 'rgba(0,0,0,0.3)' : 'var(--primary-glow)', color: '#fff', padding: '1px 7px', borderRadius: '9999px', fontSize: '0.75rem' }}>
+                      <span style={{ background: isActive ? 'var(--bg-main)' : 'var(--primary-bg)', color: isActive ? '#ffffff' : 'var(--primary)', padding: '1px 7px', borderRadius: '9999px', fontSize: '0.75rem' }}>
                         {tab.count}
                       </span>
                     )}
@@ -256,13 +262,13 @@ export function App() {
       </main>
 
       {/* Footer */}
-      <footer style={{ borderTop: '1px solid var(--border-color)', padding: '24px 0', background: 'var(--bg-surface)', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+      <footer style={{ borderTop: '1px solid var(--border-color)', padding: '28px 0', background: 'var(--bg-surface)', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
         <div className="container">
           <p>
             🥎 <strong>{athlete.name} Softball Recruiting Platform</strong> &bull; Class of {athlete.gradYear} ({athlete.highSchool})
           </p>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.78rem', marginTop: '4px' }}>
-            {athlete.travelTeam} &bull; Eagle River, Alaska
+            Focus: Nursing (BSN) &bull; Target Regions: Texas, Colorado & Pacific Northwest
           </p>
         </div>
       </footer>
@@ -270,21 +276,21 @@ export function App() {
       {/* Floating AI Assistant Trigger Button (Bottom Right) */}
       <button
         onClick={() => setIsAiChatOpen(true)}
-        className="btn btn-accent btn-lg"
+        className="btn btn-primary btn-lg"
         style={{
           position: 'fixed',
           bottom: '24px',
           right: '24px',
           zIndex: 40,
           borderRadius: '9999px',
-          boxShadow: 'var(--shadow-glow)',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
-          padding: '14px 22px'
+          padding: '14px 24px'
         }}
       >
-        <Sparkles size={22} />
+        <Sparkles size={20} />
         Ask Gemini AI
       </button>
 
@@ -303,6 +309,8 @@ export function App() {
         athlete={athlete}
         targets={targets}
         onAddTarget={handleAddTarget}
+        onUpdateProfile={handleSaveProfile}
+        onUpdateTargets={handleUpdateTargets}
       />
 
     </div>

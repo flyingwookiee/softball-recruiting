@@ -21,15 +21,20 @@ export const initialAthleteProfile = {
   headCoach: "Coach Sarah Jenkins (Alaska Arsenal)",
   hsCoach: "Coach Mark Peterson (Chugiak HS)",
 
-  // Academic Credentials
+  // Academic Credentials - Focused on Nursing & Health Sciences
   gpa: "3.95",
   gpaScale: "4.0 Weighted",
   ncaaId: "2408994102",
-  intendedMajors: ["Biology / Kinesiology", "Sports Management", "Pre-Physical Therapy"],
+  intendedMajors: [
+    "Nursing (BSN Direct Entry)",
+    "Pre-Nursing / Biomedical Sciences",
+    "Health Sciences / Pre-PT"
+  ],
   academicHonors: [
     "Honor Roll Student (Freshman Year)",
     "AP Human Geography Scholar",
-    "Chugiak Mustang Scholar Athlete Award"
+    "Chugiak Mustang Scholar Athlete Award",
+    "HOSA Future Health Professionals Member"
   ],
 
   // Key Athletic Performance Metrics
@@ -110,12 +115,12 @@ export const initialAthleteProfile = {
     },
     {
       id: "s3",
-      event: "Chugiak Mustangs High School Varsity Opener",
-      dates: "March 28, 2026",
-      location: "Eagle River, AK",
-      facility: "Chugiak High School Field",
-      team: "Chugiak Mustangs Varsity",
-      notes: "Conference Opener vs Dimond HS"
+      event: "Lone Star College Showcase",
+      dates: "Jan 16-18, 2026",
+      location: "Plano & McKinney, TX",
+      facility: "Gabe Nesbitt Softball Complex",
+      team: "Alaska Arsenal 16U",
+      notes: "Texas D2/D3 & NAIA College Coach Evaluation Event"
     },
     {
       id: "s4",
