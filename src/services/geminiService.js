@@ -14,38 +14,45 @@ const getGeminiClient = (apiKey) => {
 
 export const geminiService = {
   /**
-   * Main AI entry point with Natural Language Direct Command Execution
+   * Unrestricted AI Assistant handling general Q&A and explicit website commands
    */
   askAssistant: async (prompt, apiKey, athleteContext, targetsContext) => {
-    const lowercasePrompt = prompt.toLowerCase();
-    
-    // Check if the user is asking to update/change/add something on her website
-    const executionResult = geminiService.executeNaturalLanguageCommand(lowercasePrompt, prompt, athleteContext, targetsContext);
+    const lowercasePrompt = prompt.toLowerCase().trim();
 
-    // If a direct command was matched and executed
-    if (executionResult.commandExecuted) {
-      return executionResult;
+    // 1. Check ONLY for EXPLICIT website mutation intents (e.g. "change my...", "update my...", "set my...")
+    const isExplicitMutationIntent = 
+      lowercasePrompt.startsWith('change ') ||
+      lowercasePrompt.startsWith('update ') ||
+      lowercasePrompt.startsWith('edit ') ||
+      lowercasePrompt.startsWith('set ') ||
+      lowercasePrompt.includes('add to my target') ||
+      lowercasePrompt.includes('add to my crm');
+
+    if (isExplicitMutationIntent) {
+      const executionResult = geminiService.executeNaturalLanguageCommand(lowercasePrompt, prompt, athleteContext, targetsContext);
+      if (executionResult.commandExecuted) {
+        return executionResult;
+      }
     }
 
-    // Otherwise, check Gemini API Key for live LLM response
+    // 2. Otherwise, treat as a General AI Question! Use live Gemini LLM API if key is provided.
     const aiClient = getGeminiClient(apiKey);
     if (aiClient) {
       try {
         const systemInstruction = `
-You are an expert College Softball Recruiting Consultant & Automated Website Assistant for Emily Sain (Class of 2029) at Chugiak High School in Eagle River, AK.
-Emily plays Shortstop/Utility for Alaska Arsenal 16U (#14). She wants to major in Nursing (BSN) and is interested in colleges in Texas, Colorado, and the Pacific Northwest.
-GPA: ${athleteContext.gpa}, Exit Velo: ${athleteContext.metrics.exitVelocity}.
+You are an intelligent, supportive AI Assistant & College Softball Recruiting Consultant for Emily Sain (Class of 2029) at Chugiak High School in Eagle River, Alaska.
+Emily plays Shortstop & Utility (#14) for Alaska Arsenal 16U, has a 3.95 GPA, and intends to major in Nursing (BSN). Her target regions include Texas, Colorado, and the Pacific Northwest.
 
-Instructions:
-1. Provide actionable advice for Nursing softball prospects and Class of 2029 sophomores.
-2. Recommend softball programs with top Nursing BSN degrees in Texas (UT Tyler, West Texas A&M, St. Mary's, TAMU-Commerce, Tarleton State), Colorado (Colorado Mesa, Regis, UCCS), and PNW (Linfield, PLU).
-3. If Emily asks you to update her profile or add target schools, instruct her clearly or confirm the change!
+Guidelines:
+1. Answer ANY general question Emily or her family asks (softball strategy, NCAA rules, email advice, academic tips, Nursing school requirements, college search, general conversation).
+2. Be friendly, encouraging, concise, and structured with clear Markdown formatting.
+3. If they ask about changing site stats or adding schools to CRM, let them know they can say "Change my exit velocity to 68 MPH" or "Add UT Tyler to my target list".
 `;
 
         const response = await aiClient.models.generateContent({
           model: 'gemini-2.5-flash',
           contents: [
-            { role: 'user', parts: [{ text: `${systemInstruction}\n\nUser Prompt: ${prompt}` }] }
+            { role: 'user', parts: [{ text: `${systemInstruction}\n\nUser Question: ${prompt}` }] }
           ]
         });
 
@@ -53,16 +60,16 @@ Instructions:
           return { text: response.text };
         }
       } catch (err) {
-        console.error("Gemini API error, falling back to intelligent responder", err);
+        console.error("Gemini API call failed, using intelligent general responder", err);
       }
     }
 
-    // Default intelligent responder tailored for Nursing & Texas/Colorado/PNW recruiting
-    return geminiService.generateNursingAndRegionalResponse(lowercasePrompt, prompt, athleteContext);
+    // 3. Fallback Intelligent General Question Responder when no API Key is set
+    return geminiService.generateGeneralKnowledgeResponse(lowercasePrompt, prompt, athleteContext);
   },
 
   /**
-   * Parses & executes natural language commands to update website profile & CRM directly!
+   * Natural Language Command Mutator (Triggered ONLY on explicit edit requests)
    */
   executeNaturalLanguageCommand: (lowercase, originalPrompt, athlete, targets) => {
     let updatedAthlete = { ...athlete };
@@ -70,69 +77,41 @@ Instructions:
     let commandExecuted = false;
     let confirmationMessage = '';
 
-    // Command 1: Update Exit Velocity (e.g., "change exit velo to 68", "update exit velocity to 70 MPH")
+    // Command: Update Exit Velocity (e.g. "change exit velocity to 68", "update exit velo to 70 MPH")
     if (lowercase.includes('exit velo') || lowercase.includes('exit velocity')) {
       const match = originalPrompt.match(/(\d+)\s*(mph)?/i);
       if (match) {
         const newVelo = `${match[1]} MPH`;
         updatedAthlete.metrics = { ...updatedAthlete.metrics, exitVelocity: newVelo };
         commandExecuted = true;
-        confirmationMessage = `⚡ **Website Updated!** I have updated your Exit Velocity to **${newVelo}** on your public profile!`;
+        confirmationMessage = `⚡ **Website Updated!** Updated Exit Velocity to **${newVelo}**!`;
       }
     }
 
-    // Command 2: Update Batting Average (e.g., "change batting average to .450", "update BA to .435")
+    // Command: Update Batting Average (e.g. "change batting average to .450")
     else if (lowercase.includes('batting average') || lowercase.includes('ba to') || lowercase.includes('batting avg')) {
       const match = originalPrompt.match(/(\.\d{3}|\d\.\d{3})/);
       if (match) {
         const newBa = match[1];
         updatedAthlete.seasonStats = { ...updatedAthlete.seasonStats, battingAverage: newBa };
         commandExecuted = true;
-        confirmationMessage = `⚾ **Website Updated!** I have updated your Batting Average to **${newBa}** on your public profile!`;
+        confirmationMessage = `⚾ **Website Updated!** Updated Batting Average to **${newBa}**!`;
       }
     }
 
-    // Command 3: Update GPA (e.g., "update GPA to 4.0", "change gpa to 3.98")
+    // Command: Update GPA (e.g. "update GPA to 4.0")
     else if (lowercase.includes('gpa')) {
       const match = originalPrompt.match(/(\d\.\d+)/);
       if (match) {
         const newGpa = match[1];
         updatedAthlete.gpa = newGpa;
         commandExecuted = true;
-        confirmationMessage = `🎓 **Website Updated!** I have updated your GPA to **${newGpa}**!`;
+        confirmationMessage = `🎓 **Website Updated!** Updated Cumulative GPA to **${newGpa}**!`;
       }
     }
 
-    // Command 4: Add Texas & Nursing Colleges to Target List
-    else if (lowercase.includes('add texas') || lowercase.includes('add colorado') || lowercase.includes('add nursing')) {
-      const nursingSchools = collegesDatabase.filter(c => 
-        c.popularMajors.some(m => m.toLowerCase().includes('nursing')) &&
-        (c.state === 'TX' || c.state === 'CO' || c.state === 'OR' || c.state === 'WA')
-      );
-
-      const newSchoolsAdded = [];
-      nursingSchools.forEach(school => {
-        if (!updatedTargets.some(t => t.id === school.id)) {
-          updatedTargets.push({
-            ...school,
-            status: 'Target',
-            addedDate: new Date().toISOString().split('T')[0],
-            lastContactDate: '',
-            notes: 'Added via Gemini AI Assistant for Nursing (BSN) focus.'
-          });
-          newSchoolsAdded.push(school.name);
-        }
-      });
-
-      if (newSchoolsAdded.length > 0) {
-        commandExecuted = true;
-        confirmationMessage = `🩺 **Target CRM Updated!** I have added **${newSchoolsAdded.length} top Nursing softball programs** in Texas, Colorado, and PNW directly to your Target CRM:\n\n` +
-          newSchoolsAdded.map(s => `• **${s}**`).join('\n');
-      }
-    }
-
-    // Command 5: Add specific target school by name (e.g., "Add UT Tyler to my targets", "Add Regis to my target list")
-    else if (lowercase.includes('add') && (lowercase.includes('target') || lowercase.includes('crm') || lowercase.includes('school'))) {
+    // Command: Add specific target school (e.g. "add UT Tyler to my target list")
+    else if (lowercase.includes('target') || lowercase.includes('crm') || lowercase.includes('school')) {
       const foundSchool = collegesDatabase.find(c => lowercase.includes(c.name.toLowerCase()) || lowercase.includes(c.city.toLowerCase()));
       if (foundSchool) {
         if (!updatedTargets.some(t => t.id === foundSchool.id)) {
@@ -144,10 +123,7 @@ Instructions:
             notes: 'Added via Gemini AI Assistant.'
           });
           commandExecuted = true;
-          confirmationMessage = `🎯 **Target CRM Updated!** Added **${foundSchool.name}** (${foundSchool.division} - ${foundSchool.state}) to your target CRM list!`;
-        } else {
-          commandExecuted = true;
-          confirmationMessage = `ℹ️ **${foundSchool.name}** is already in your Target CRM list!`;
+          confirmationMessage = `🎯 **Target CRM Updated!** Added **${foundSchool.name}** (${foundSchool.division} - ${foundSchool.state}) to your Target CRM list!`;
         }
       }
     }
@@ -161,48 +137,53 @@ Instructions:
   },
 
   /**
-   * Fallback responder focused on Nursing Majors & Texas/Colorado/PNW schools
+   * General Knowledge Fallback Responder for unrestricted questions
    */
-  generateNursingAndRegionalResponse: (lowercase, originalPrompt, athlete) => {
-    // 1. Nursing Majors & College Recommendation Query
-    if (lowercase.includes('nursing') || lowercase.includes('texas') || lowercase.includes('colorado') || lowercase.includes('major') || lowercase.includes('school')) {
-      const nursingSchools = collegesDatabase.filter(c => 
-        c.popularMajors.some(m => m.toLowerCase().includes('nursing'))
-      );
-
-      let replyText = `### 🩺 Top Nursing Softball Programs for Emily Sain (Texas, Colorado & PNW)\n\n`;
-      replyText += `Since Emily wants to pursue **Nursing (BSN)** and is interested in **Texas, Colorado, and the Pacific Northwest**, here are premier college softball programs with top-ranked Nursing schools:\n\n`;
-
-      nursingSchools.slice(0, 5).forEach(school => {
-        replyText += `#### 🥎 **${school.name}** (${school.division} - ${school.conference})\n`;
-        replyText += `• 📍 **Location**: ${school.city}, ${school.state} (${school.region})\n`;
-        replyText += `• 🩺 **Nursing Major**: ${school.popularMajors.find(m => m.includes('Nursing')) || 'Nursing BSN'}\n`;
-        replyText += `• 🧢 **Head Coach**: ${school.headCoach} (${school.coachEmail})\n`;
-        replyText += `• 💡 **Program Notes**: ${school.notes}\n\n`;
-      });
-
-      replyText += `---\n\n### ⚡ How Emily Can Update Her Website Live With AI:\n`;
-      replyText += `Emily can type natural commands directly in this chat and **I will automatically update her website for her**! Examples:\n`;
-      replyText += `1. *"Add Texas and Colorado Nursing schools to my target CRM list"*\n`;
-      replyText += `2. *"Change my exit velocity to 68 MPH"*\n`;
-      replyText += `3. *"Update my GPA to 4.0"*\n`;
-      replyText += `4. *"Add UT Tyler to my target list"*\n`;
-
+  generateGeneralKnowledgeResponse: (lowercase, originalPrompt, athlete) => {
+    // 1. Nursing Questions
+    if (lowercase.includes('nursing') || lowercase.includes('nurse') || lowercase.includes('bsn') || lowercase.includes('medical')) {
       return {
-        text: replyText,
-        actionRecommendations: nursingSchools.slice(0, 5)
+        text: `### 🩺 Nursing (BSN) Pathways & Tips for Emily Sain\n\n` +
+          `Nursing is a fantastic, high-demand career! Here is what Emily should focus on as a high school sophomore in Alaska:\n\n` +
+          `1. **High School Coursework**: Maintain high grades in Chemistry, Biology, and Algebra/Pre-Calculus (Emily's 3.95 GPA is excellent!).\n` +
+          `2. **Direct-Entry BSN Programs**: Look for colleges offering *Direct Entry BSN* where you are admitted into the nursing clinical track as a freshman (e.g., UT Tyler, Regis University CO, Pacific Lutheran WA, LeTourneau TX).\n` +
+          `3. **Clinical Rotation Schedules & Softball**: Ask college coaches how softball practice and game travel integrate with junior/senior year hospital clinical rotations.\n` +
+          `4. **Scholarships**: HRSA NURSE Corps offers 100% full tuition + monthly living stipends for nursing students!\n\n` +
+          `> 💡 **Connect Google AI Key**: Connect your Google Gemini API key in the top bar to ask live, detailed questions on any nursing program or topic!`
       };
     }
 
-    // Default Response explaining direct website updates
+    // 2. NCAA Rules & Contact Questions
+    if (lowercase.includes('ncaa') || lowercase.includes('rule') || lowercase.includes('contact') || lowercase.includes('when') || lowercase.includes('sophomore')) {
+      return {
+        text: `### 📋 NCAA Recruiting Rules for Class of 2029 Sophomores\n\n` +
+          `• **NCAA D1 & D2 Rules**: Head coaches cannot initiate personal phone calls, texts, or private emails with sophomores until **September 1st of Junior Year**.\n` +
+          `• **What Emily CAN Do Right Now**: Emily CAN send emails, highlight film, showcase schedules, and call coaches anytime! While D1/D2 coaches can't reply with personal emails yet, they DO watch her video and log her information in their recruit database.\n` +
+          `• **NCAA D3 & NAIA**: D3 and NAIA coaches have no contact restrictions and can correspond directly with Emily anytime.`
+      };
+    }
+
+    // 3. Email & Communication Strategy
+    if (lowercase.includes('email') || lowercase.includes('write') || lowercase.includes('contact coach') || lowercase.includes('message')) {
+      return {
+        text: `### ✉️ College Coach Email Outreach Advice\n\n` +
+          `When emailing college head coaches as a sophomore:\n` +
+          `1. **Subject Line**: Always include Grad Year, Position, Name, GPA, and Video link (e.g. *Class of 2029 SS - Emily Sain - Chugiak HS (AK) - 3.95 GPA & Hitting Film*).\n` +
+          `2. **Keep it Concise**: 3 short paragraphs highlighting GPA, Exit Velo (66 MPH), upcoming showcase dates, and why you love their specific program.\n` +
+          `3. **Use the Dashboard Email Builder**: You can use the **Email Builder** tab in the dashboard to generate formatted drafts in 1 click!`
+      };
+    }
+
+    // 4. Any Other General Question
     return {
-      text: `### 🤖 Gemini AI Website Assistant for Emily Sain\n\n` +
-        `I am Emily's active AI Recruiting Consultant. I can **answer questions** AND **update her website live** when she types to me!\n\n` +
-        `#### 🩺 Featured Nursing & Region Recommendations:\n` +
-        `• **Texas Programs**: UT Tyler (D2), West Texas A&M (D2), St. Mary's TX (D2), Texas A&M Commerce (D1), Tarleton State (D1).\n` +
-        `• **Colorado Programs**: Colorado Mesa (D2), Regis University (D2 - Loretto Heights School of Nursing), UCCS (D2 - Johnson Beth-El School of Nursing).\n` +
-        `• **Pacific Northwest**: Linfield University (D3 #1 Softball + Portland Nursing School), Pacific Lutheran (D3 Direct Entry BSN).\n\n` +
-        `> 💡 **Try typing a live command right now**: *"Add Texas Nursing schools to my target list"* or *"Change my exit velocity to 68 MPH"*!`
+      text: `### 🤖 Gemini AI Assistant\n\n` +
+        `Hello Emily! I am ready to answer **ANY question** you have about college recruiting, softball strategy, Nursing BSN programs, high school academics, or general topics!\n\n` +
+        `Examples of what you can ask me:\n` +
+        `• *"What questions should I ask a college nursing professor during a campus visit?"*\n` +
+        `• *"How should I prepare for a D2 college prospect camp?"*\n` +
+        `• *"Explain the difference between D1, D2, and D3 softball schedules."*\n` +
+        `• *"Change my exit velocity to 68 MPH"*\n\n` +
+        `> 💡 **Tip**: Connect your Google AI Premium API Key in the top right for live, unrestricted Gemini LLM answers to any question!`
     };
   }
 };
