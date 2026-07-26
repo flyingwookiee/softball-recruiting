@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Sparkles, Key, Bot, User, Plus, Check, RefreshCw, Zap } from 'lucide-react';
+import { X, Send, Sparkles, Key, Bot, User, Plus, Check, RefreshCw, ExternalLink } from 'lucide-react';
 import { geminiService } from '../../services/geminiService';
 
 export const GeminiChatModal = ({ isOpen, onClose, apiKey, onSaveApiKey, athlete, targets, onAddTarget, onUpdateProfile, onUpdateTargets }) => {
@@ -63,7 +63,7 @@ export const GeminiChatModal = ({ isOpen, onClose, apiKey, onSaveApiKey, athlete
         ...newMessages,
         {
           role: 'assistant',
-          text: "I encountered an error processing your request. Please try again."
+          text: "I encountered an error processing your request. Please check your Gemini API key."
         }
       ]);
     } finally {
@@ -129,7 +129,7 @@ export const GeminiChatModal = ({ isOpen, onClose, apiKey, onSaveApiKey, athlete
             <div>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Gemini AI Assistant & Live Website Editor</h3>
               <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                Powered by Google Gemini • Nursing & Texas/Colorado Recruiting Expert
+                Powered by Google Gemini • Google AI Subscription Compatible
               </p>
             </div>
           </div>
@@ -138,9 +138,9 @@ export const GeminiChatModal = ({ isOpen, onClose, apiKey, onSaveApiKey, athlete
             <button
               onClick={() => setShowKeyField(!showKeyField)}
               className="btn btn-secondary btn-sm"
-              style={{ fontSize: '0.78rem' }}
+              style={{ fontSize: '0.78rem', borderColor: apiKey ? '#10b981' : 'var(--border-color)', color: apiKey ? '#10b981' : 'var(--text-main)' }}
             >
-              <Key size={14} /> {apiKey ? 'API Key Active' : 'Set API Key'}
+              <Key size={14} /> {apiKey ? 'Gemini Key Active' : 'Connect Google AI Key'}
             </button>
 
             <button onClick={onClose} className="btn btn-secondary btn-sm" style={{ padding: '8px' }}>
@@ -149,23 +149,31 @@ export const GeminiChatModal = ({ isOpen, onClose, apiKey, onSaveApiKey, athlete
           </div>
         </div>
 
-        {/* API Key Drawer */}
+        {/* API Key Connection Drawer with Guide */}
         {showKeyField && (
-          <div style={{ padding: '12px 24px', background: 'var(--bg-card)', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <input
-              type="password"
-              className="input"
-              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
-              placeholder="Paste Google Gemini API Key (e.g. AIzaSy...)"
-              value={keyInput}
-              onChange={e => setKeyInput(e.target.value)}
-            />
-            <button
-              onClick={() => { onSaveApiKey(keyInput); setShowKeyField(false); }}
-              className="btn btn-primary btn-sm"
-            >
-              Save Key
-            </button>
+          <div style={{ padding: '16px 24px', background: 'var(--bg-card)', borderBottom: '1px solid var(--border-color)' }}>
+            <div style={{ fontSize: '0.82rem', color: 'var(--text-main)', fontWeight: 700, marginBottom: '6px' }}>
+              🔑 Connect Google Gemini AI Premium Subscription:
+            </div>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '10px' }}>
+              Generate a free API key using your Google account at <a href="https://aistudio.google.com" target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', fontWeight: 700 }}>aistudio.google.com <ExternalLink size={12} /></a> and paste it below:
+            </p>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input
+                type="password"
+                className="input"
+                style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                placeholder="Paste Gemini API Key (starts with AIzaSy...)"
+                value={keyInput}
+                onChange={e => setKeyInput(e.target.value)}
+              />
+              <button
+                onClick={() => { onSaveApiKey(keyInput); setShowKeyField(false); }}
+                className="btn btn-primary btn-sm"
+              >
+                Save Key
+              </button>
+            </div>
           </div>
         )}
 
