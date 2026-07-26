@@ -1,34 +1,51 @@
 import { initialAthleteProfile } from '../data/initialAthleteProfile';
 import { collegesDatabase } from '../data/collegesDatabase';
+import { scholarshipsDatabase } from '../data/scholarshipsDatabase';
 
 const STORAGE_KEYS = {
   ATHLETE_PROFILE: 'softball_recruiting_profile_v2',
   TARGET_COLLEGES: 'softball_recruiting_targets_v1',
   GEMINI_API_KEY: 'softball_recruiting_gemini_key_v1',
-  CHECKLIST_PROGRESS: 'softball_recruiting_checklist_v1'
+  CHECKLIST_PROGRESS: 'softball_recruiting_checklist_v1',
+  SAVED_SCHOLARSHIPS: 'softball_recruiting_scholarships_v1'
 };
 
 const initialTargets = [
   {
-    ...collegesDatabase[0], // Western Washington University
+    ...collegesDatabase[0], // UT Tyler
     status: 'Contacted',
     addedDate: '2025-10-01',
     lastContactDate: '2025-10-15',
-    notes: 'Sent initial intro email with Fall Seattle showcase schedule and hitting video. Waiting for camp invite.'
+    notes: 'Sent initial intro email with Fall Seattle showcase schedule and hitting video. Top Nursing choice.'
   },
   {
-    ...collegesDatabase[3], // Linfield University
+    ...collegesDatabase[1], // West Texas A&M
     status: 'Interested',
     addedDate: '2025-10-05',
     lastContactDate: '',
-    notes: 'Top D3 choice in Pacific Northwest. High nursing/pre-med program interest.'
+    notes: 'National D2 softball powerhouse in Canyon TX with top BSN Nursing program.'
   },
   {
-    ...collegesDatabase[1], // Central Washington University
+    ...collegesDatabase[6], // Colorado Mesa University
     status: 'Target',
     addedDate: '2025-10-10',
     lastContactDate: '',
-    notes: 'GNAC program in Ellensburg. Planning to attend their Winter camp.'
+    notes: 'RMAC program in Grand Junction CO with premier Department of Health Sciences.'
+  }
+];
+
+const initialScholarships = [
+  {
+    ...scholarshipsDatabase[0], // Marine Corps Scholarship
+    status: 'In Progress'
+  },
+  {
+    ...scholarshipsDatabase[3], // HRSA NURSE Corps
+    status: 'Not Applied'
+  },
+  {
+    ...scholarshipsDatabase[7], // Alaska Performance Scholarship
+    status: 'Awarded'
   }
 ];
 
@@ -100,6 +117,24 @@ export const storageService = {
     const updated = current.filter(t => t.id !== collegeId);
     storageService.saveTargets(updated);
     return updated;
+  },
+
+  // Scholarships CRM
+  getSavedScholarships: () => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.SAVED_SCHOLARSHIPS);
+      return saved ? JSON.parse(saved) : initialScholarships;
+    } catch (e) {
+      return initialScholarships;
+    }
+  },
+
+  saveScholarships: (scholarships) => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.SAVED_SCHOLARSHIPS, JSON.stringify(scholarships));
+    } catch (e) {
+      console.error("Error saving scholarships", e);
+    }
   },
 
   // Gemini API Key

@@ -13,13 +13,14 @@ import { TargetTracker } from './components/Dashboard/TargetTracker';
 import { EmailComposer } from './components/Dashboard/EmailComposer';
 import { SophomoreRoadmap } from './components/Dashboard/SophomoreRoadmap';
 import { ProfileEditor } from './components/Dashboard/ProfileEditor';
+import { ScholarshipTracker } from './components/Dashboard/ScholarshipTracker';
 
 import { GeminiChatModal } from './components/AIAssistant/GeminiChatModal';
 
 import { storageService } from './services/storageService';
 import { sophomoreRecruitingTimeline } from './data/recruitingRules';
 
-import { Target, Search, Mail, CheckSquare, Edit3, Sparkles } from 'lucide-react';
+import { Target, Search, Mail, CheckSquare, Edit3, Sparkles, DollarSign } from 'lucide-react';
 
 export function App() {
   // Theme State ('dark' | 'light' | 'spacex')
@@ -27,13 +28,14 @@ export function App() {
 
   // Navigation & View States
   const [activeView, setActiveView] = useState('public'); // 'public' | 'dashboard'
-  const [dashboardTab, setDashboardTab] = useState('crm'); // 'crm' | 'finder' | 'email' | 'roadmap' | 'editor'
+  const [dashboardTab, setDashboardTab] = useState('crm'); // 'crm' | 'finder' | 'email' | 'roadmap' | 'scholarships' | 'editor'
 
   // Application Data States
   const [athlete, setAthlete] = useState(storageService.getProfile());
   const [targets, setTargets] = useState(storageService.getTargets());
   const [apiKey, setApiKey] = useState(storageService.getApiKey());
   const [checklist, setChecklist] = useState(storageService.getChecklist(sophomoreRecruitingTimeline.checklist));
+  const [savedScholarships, setSavedScholarships] = useState(storageService.getSavedScholarships());
 
   // Selection & Modal States
   const [selectedCollegeForEmail, setSelectedCollegeForEmail] = useState(null);
@@ -76,6 +78,26 @@ export function App() {
   const handleRemoveTarget = (collegeId) => {
     const updated = storageService.removeTarget(collegeId);
     setTargets(updated);
+  };
+
+  // Scholarship Persistence Handlers
+  const handleSaveScholarship = (sch) => {
+    if (savedScholarships.some(s => s.id === sch.id)) return;
+    const updated = [{ ...sch, status: 'Not Applied' }, ...savedScholarships];
+    setSavedScholarships(updated);
+    storageService.saveScholarships(updated);
+  };
+
+  const handleRemoveScholarship = (schId) => {
+    const updated = savedScholarships.filter(s => s.id !== schId);
+    setSavedScholarships(updated);
+    storageService.saveScholarships(updated);
+  };
+
+  const handleUpdateScholarshipStatus = (schId, status) => {
+    const updated = savedScholarships.map(s => s.id === schId ? { ...s, status } : s);
+    setSavedScholarships(updated);
+    storageService.saveScholarships(updated);
   };
 
   const handleSaveApiKey = (key) => {
@@ -184,6 +206,7 @@ export function App() {
               {[
                 { id: 'crm', label: 'My Target CRM', icon: Target, count: targets.length },
                 { id: 'finder', label: 'College Directory', icon: Search },
+                { id: 'scholarships', label: 'Scholarships & GI Bill', icon: DollarSign, count: savedScholarships.length },
                 { id: 'email', label: 'Email Builder', icon: Mail },
                 { id: 'roadmap', label: 'Sophomore Roadmap', icon: CheckSquare },
                 { id: 'editor', label: 'Edit Profile & Stats', icon: Edit3 }
@@ -234,6 +257,16 @@ export function App() {
               />
             )}
 
+            {dashboardTab === 'scholarships' && (
+              <ScholarshipTracker
+                savedScholarships={savedScholarships}
+                onSaveScholarship={handleSaveScholarship}
+                onRemoveScholarship={handleRemoveScholarship}
+                onUpdateScholarshipStatus={handleUpdateScholarshipStatus}
+                onConsultAi={handleConsultAiForSchool}
+              />
+            )}
+
             {dashboardTab === 'email' && (
               <EmailComposer
                 athlete={athlete}
@@ -268,7 +301,7 @@ export function App() {
             🥎 <strong>{athlete.name} Softball Recruiting Platform</strong> &bull; Class of {athlete.gradYear} ({athlete.highSchool})
           </p>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.78rem', marginTop: '4px' }}>
-            Focus: Nursing (BSN) &bull; Target Regions: Texas, Colorado & Pacific Northwest
+            Academic Focus: Nursing (BSN) &bull; GI Bill & Scholarship Funding Planner Included
           </p>
         </div>
       </footer>
