@@ -1,0 +1,23 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Directory for instrumented code tests
+lib-cov
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# node_modules
+node_modules/
+dist/
+.DS_Store
+.env
+.env.local
