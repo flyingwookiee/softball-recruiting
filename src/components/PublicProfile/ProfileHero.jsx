@@ -1,7 +1,7 @@
 import React from 'react';
-import { MapPin, Trophy, Mail, Edit3 } from 'lucide-react';
+import { MapPin, Trophy, Mail, Film, ArrowUpRight } from 'lucide-react';
 
-export const ProfileHero = ({ athlete, onOpenContactModal, onOpenProfileEditor }) => {
+export const ProfileHero = ({ athlete, onOpenContactModal }) => {
   return (
     <section className="apple-card" style={{ padding: '40px', marginBottom: '32px' }}>
       
@@ -41,13 +41,13 @@ export const ProfileHero = ({ athlete, onOpenContactModal, onOpenProfileEditor }
               College Coach Inquiry
             </button>
 
-            <button
-              onClick={onOpenProfileEditor}
+            <a
+              href="#videos"
               className="btn btn-secondary btn-lg"
             >
-              <Edit3 size={18} />
-              Edit Profile
-            </button>
+              <Film size={18} />
+              Watch Video Film
+            </a>
           </div>
         </div>
 

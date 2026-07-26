@@ -1,13 +1,13 @@
 import React from 'react';
-import { LayoutDashboard, UserCheck, Sparkles, Edit3, Sun, Moon, Rocket } from 'lucide-react';
+import { Shield, Sparkles, Lock, LogOut } from 'lucide-react';
 
-export const Navbar = ({ activeView, setActiveView, onOpenAiChat, onOpenProfileEditor, athlete, currentTheme, onThemeChange }) => {
+export const Navbar = ({ activeView, athlete, currentTheme, onThemeChange, onOpenLockModal, onLockDashboard, isUnlocked }) => {
   return (
     <header style={{
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      background: 'rgba(0, 0, 0, 0.8)',
+      background: 'rgba(10, 10, 12, 0.85)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
       borderBottom: '1px solid var(--border-color)',
@@ -15,7 +15,7 @@ export const Navbar = ({ activeView, setActiveView, onOpenAiChat, onOpenProfileE
     }}>
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
         
-        {/* Brand & Athlete Badge */}
+        {/* Left: Emily Sain Brand Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
             width: '36px',
@@ -41,82 +41,58 @@ export const Navbar = ({ activeView, setActiveView, onOpenAiChat, onOpenProfileE
               </span>
             </div>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              {athlete.highSchool} • {athlete.travelTeam}
+              {athlete.highSchool} • {athlete.primaryPosition}
             </p>
           </div>
         </div>
 
-        {/* Apple Style Segmented Pill View Switcher */}
-        <div style={{
-          display: 'flex',
-          background: 'rgba(255, 255, 255, 0.08)',
-          padding: '3px',
-          borderRadius: '9999px',
-          border: '1px solid var(--border-color)'
-        }}>
-          <button
-            onClick={() => setActiveView('public')}
-            className="btn btn-sm"
-            style={{
-              background: activeView === 'public' ? '#ffffff' : 'transparent',
-              color: activeView === 'public' ? '#000000' : 'var(--text-muted)',
-              borderRadius: '9999px',
-              fontWeight: activeView === 'public' ? 700 : 500,
-              padding: '6px 18px'
-            }}
-          >
-            <UserCheck size={15} />
-            Public Coach Profile
-          </button>
+        {/* Center: Public Portfolio Quick Links (or Private Dashboard Indicator) */}
+        {activeView === 'public' ? (
+          <div style={{ display: 'flex', gap: '16px', fontSize: '0.86rem', color: 'var(--text-muted)', fontWeight: 500 }} className="desktop-only">
+            <a href="#stats" style={{ color: 'inherit', textDecoration: 'none' }}>Performance Stats</a>
+            <a href="#videos" style={{ color: 'inherit', textDecoration: 'none' }}>Video Reels</a>
+            <a href="#schedule" style={{ color: 'inherit', textDecoration: 'none' }}>Tournament Schedule</a>
+            <a href="#academics" style={{ color: 'inherit', textDecoration: 'none' }}>Academics</a>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="badge badge-primary" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid #10b981' }}>
+              🔒 Private Dashboard Active
+            </span>
+          </div>
+        )}
 
-          <button
-            onClick={() => setActiveView('dashboard')}
-            className="btn btn-sm"
-            style={{
-              background: activeView === 'dashboard' ? '#ffffff' : 'transparent',
-              color: activeView === 'dashboard' ? '#000000' : 'var(--text-muted)',
-              borderRadius: '9999px',
-              fontWeight: activeView === 'dashboard' ? 700 : 500,
-              padding: '6px 18px'
-            }}
-          >
-            <LayoutDashboard size={15} />
-            Recruiting Dashboard
-          </button>
-        </div>
-
-        {/* Action Controls */}
+        {/* Right: Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           
-          {/* Theme Selector Dropdown */}
+          {/* Theme Selector */}
           <select
             className="select"
             style={{ padding: '6px 12px', fontSize: '0.8rem', borderRadius: '9999px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-main)', width: 'auto', cursor: 'pointer' }}
             value={currentTheme}
             onChange={e => onThemeChange(e.target.value)}
           >
-            <option value="dark"> Apple Studio Dark</option>
-            <option value="light"> Apple Studio Light</option>
+            <option value="dark"> Studio Dark</option>
+            <option value="light"> Studio Light</option>
             <option value="spacex">🚀 SpaceX Stealth</option>
           </select>
 
-          {/* Edit Profile Button */}
-          <button
-            onClick={onOpenProfileEditor}
-            className="btn btn-secondary btn-sm"
-          >
-            <Edit3 size={15} />
-            Edit Profile
-          </button>
-
-          {/* AI Assistant Button */}
-          <button
-            onClick={onOpenAiChat}
-            className="btn btn-primary btn-sm"
-          >
-            <Sparkles size={15} />
-            Gemini AI
-          </button>
+          {/* Unlocked Dashboard vs Public Portfolio Control */}
+          {isUnlocked && activeView === 'dashboard' ? (
+            <button
+              onClick={onLockDashboard}
+              className="btn btn-secondary btn-sm"
+            >
+              <LogOut size={15} /> Exit to Public Portfolio
+            </button>
+          ) : isUnlocked && activeView === 'public' ? (
+            <button
+              onClick={onOpenLockModal}
+              className="btn btn-secondary btn-sm"
+            >
+              <Lock size={15} /> Return to Dashboard
+            </button>
+          ) : null}
 
         </div>
 

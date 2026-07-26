@@ -15,20 +15,28 @@ import { SophomoreRoadmap } from './components/Dashboard/SophomoreRoadmap';
 import { ProfileEditor } from './components/Dashboard/ProfileEditor';
 import { ScholarshipTracker } from './components/Dashboard/ScholarshipTracker';
 import { NotesJournal } from './components/Dashboard/NotesJournal';
+import { DashboardLockModal } from './components/Dashboard/DashboardLockModal';
 
 import { GeminiChatModal } from './components/AIAssistant/GeminiChatModal';
 
 import { storageService } from './services/storageService';
 import { sophomoreRecruitingTimeline } from './data/recruitingRules';
 
-import { Target, Search, Mail, CheckSquare, Edit3, Sparkles, DollarSign, BookOpen } from 'lucide-react';
+import { Target, Search, Mail, CheckSquare, Edit3, Sparkles, DollarSign, BookOpen, Lock, ShieldCheck } from 'lucide-react';
 
 export function App() {
   // Theme State ('dark' | 'light' | 'spacex')
   const [theme, setTheme] = useState(() => localStorage.getItem('softball_theme_v2') || 'dark');
 
-  // Navigation & View States
-  const [activeView, setActiveView] = useState('public'); // 'public' | 'dashboard'
+  // Security Lock State for Internal Dashboard
+  const [isUnlocked, setIsUnlocked] = useState(() => {
+    // Check URL parameters for ?dashboard=true or local session
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('dashboard') === 'true' || localStorage.getItem('softball_unlocked_session') === 'true';
+  });
+
+  // Navigation View State: Default 'public' portfolio resume
+  const [activeView, setActiveView] = useState(isUnlocked ? 'dashboard' : 'public');
   const [dashboardTab, setDashboardTab] = useState('crm'); // 'crm' | 'finder' | 'scholarships' | 'journal' | 'email' | 'roadmap' | 'editor'
 
   // Application Data States
@@ -43,6 +51,7 @@ export function App() {
   const [selectedCollegeForEmail, setSelectedCollegeForEmail] = useState(null);
   const [isCoachContactOpen, setIsCoachContactOpen] = useState(false);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
+  const [isLockModalOpen, setIsLockModalOpen] = useState(false);
 
   // Apply Theme to document root
   useEffect(() => {
@@ -50,10 +59,19 @@ export function App() {
     localStorage.setItem('softball_theme_v2', theme);
   }, [theme]);
 
-  // Direct trigger to jump straight to Profile Editor
-  const handleOpenProfileEditor = () => {
+  // Handle Unlock Action
+  const handleUnlockDashboard = () => {
+    setIsUnlocked(true);
+    localStorage.setItem('softball_unlocked_session', 'true');
+    setIsLockModalOpen(false);
     setActiveView('dashboard');
-    setDashboardTab('editor');
+  };
+
+  // Handle Lock / Exit Action
+  const handleLockDashboard = () => {
+    setIsUnlocked(false);
+    localStorage.removeItem('softball_unlocked_session');
+    setActiveView('public');
   };
 
   // Persistence Handlers
@@ -145,65 +163,55 @@ export function App() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
-      {/* Top Sticky Navigation Bar */}
+      {/* Top Navigation Bar */}
       <Navbar
         activeView={activeView}
-        setActiveView={setActiveView}
-        onOpenApiKeyModal={() => setIsAiChatOpen(true)}
-        onOpenAiChat={() => setIsAiChatOpen(true)}
-        onOpenProfileEditor={handleOpenProfileEditor}
-        hasApiKey={!!apiKey}
         athlete={athlete}
         currentTheme={theme}
         onThemeChange={setTheme}
+        onOpenLockModal={() => setIsLockModalOpen(true)}
+        onLockDashboard={handleLockDashboard}
+        isUnlocked={isUnlocked}
       />
 
       {/* Main Content Area */}
       <main className="container" style={{ flex: 1, padding: '36px 24px' }}>
         
-        {/* ==================== VIEW 1: PUBLIC ATHLETE PROFILE ==================== */}
+        {/* ==================== VIEW 1: STANDALONE PUBLIC ATHLETE PORTFOLIO RESUME ==================== */}
         {activeView === 'public' && (
           <div className="animate-fade-in">
             
-            {/* Public Coach Banner */}
-            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-color)', padding: '14px 24px', borderRadius: 'var(--radius-md)', marginBottom: '28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-              <div style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 600 }}>
-                🌐 <strong>Public Coach View</strong>: Showcase profile for college recruiters evaluating film, stats & Nursing academics.
-              </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button onClick={handleOpenProfileEditor} className="btn btn-secondary btn-sm">
-                  <Edit3 size={15} /> Edit Profile
-                </button>
-                <button onClick={() => setActiveView('dashboard')} className="btn btn-primary btn-sm">
-                  Switch to Dashboard
-                </button>
-              </div>
-            </div>
-
             {/* Profile Hero Section */}
             <ProfileHero
               athlete={athlete}
               onOpenContactModal={() => setIsCoachContactOpen(true)}
-              onOpenProfileEditor={handleOpenProfileEditor}
             />
 
             {/* Athletic Metrics & Stats */}
-            <AthleticStats athlete={athlete} />
+            <div id="stats">
+              <AthleticStats athlete={athlete} />
+            </div>
 
             {/* Video Highlights & Showcase Film */}
-            <VideoSection videos={athlete.videos} />
+            <div id="videos">
+              <VideoSection videos={athlete.videos} />
+            </div>
 
             {/* Tournament & Game Schedule */}
-            <ScheduleSection schedule={athlete.schedule} />
+            <div id="schedule">
+              <ScheduleSection schedule={athlete.schedule} />
+            </div>
 
             {/* Academic Credentials */}
-            <AcademicsSection athlete={athlete} />
+            <div id="academics">
+              <AcademicsSection athlete={athlete} />
+            </div>
 
           </div>
         )}
 
-        {/* ==================== VIEW 2: RECRUITING DASHBOARD ==================== */}
-        {activeView === 'dashboard' && (
+        {/* ==================== VIEW 2: PRIVATE ATHLETE RECRUITING DASHBOARD ==================== */}
+        {activeView === 'dashboard' && isUnlocked && (
           <div className="animate-fade-in">
             
             {/* Summary Metrics & Action Bar */}
@@ -326,44 +334,75 @@ export function App() {
 
       </main>
 
-      {/* Footer */}
+      {/* Standalone Public Footer */}
       <footer style={{ borderTop: '1px solid var(--border-color)', padding: '28px 0', background: 'var(--bg-surface)', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-        <div className="container">
-          <p>
-            🥎 <strong>{athlete.name} Softball Recruiting Platform</strong> &bull; Class of {athlete.gradYear} ({athlete.highSchool})
-          </p>
-          <p style={{ color: 'var(--text-dim)', fontSize: '0.78rem', marginTop: '4px' }}>
-            Academic Focus: Nursing (BSN) &bull; Journal & Strategy Notes Hub Included
-          </p>
+        <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <p>
+              🥎 <strong>{athlete.name} Softball Recruiting Portfolio</strong> &bull; Class of {athlete.gradYear} ({athlete.highSchool})
+            </p>
+            <p style={{ color: 'var(--text-dim)', fontSize: '0.78rem', marginTop: '2px' }}>
+              Academic Focus: Nursing (BSN) &bull; Eagle River, Alaska
+            </p>
+          </div>
+
+          {/* Discreet Athlete Passcode Unlock Icon in Footer */}
+          <div>
+            {isUnlocked ? (
+              <button
+                onClick={() => setActiveView(activeView === 'public' ? 'dashboard' : 'public')}
+                className="btn btn-secondary btn-sm"
+                style={{ fontSize: '0.78rem' }}
+              >
+                {activeView === 'public' ? '🔓 Open Athlete Dashboard' : '🌐 View Public Resume'}
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsLockModalOpen(true)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-dim)', fontSize: '0.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                title="Athlete Dashboard Login"
+              >
+                <Lock size={13} /> Athlete Access
+              </button>
+            )}
+          </div>
         </div>
       </footer>
 
-      {/* Floating AI Assistant Trigger Button (Bottom Right) */}
-      <button
-        onClick={() => setIsAiChatOpen(true)}
-        className="btn btn-primary btn-lg"
-        style={{
-          position: 'fixed',
-          bottom: '24px',
-          right: '24px',
-          zIndex: 40,
-          borderRadius: '9999px',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          padding: '14px 24px'
-        }}
-      >
-        <Sparkles size={20} />
-        Ask Gemini AI
-      </button>
+      {/* Floating AI Assistant Trigger Button (Visible ONLY when Unlocked in Dashboard) */}
+      {isUnlocked && activeView === 'dashboard' && (
+        <button
+          onClick={() => setIsAiChatOpen(true)}
+          className="btn btn-primary btn-lg"
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            zIndex: 40,
+            borderRadius: '9999px',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '14px 24px'
+          }}
+        >
+          <Sparkles size={20} />
+          Ask Gemini AI
+        </button>
+      )}
 
       {/* Modals */}
       <CoachContactModal
         isOpen={isCoachContactOpen}
         onClose={() => setIsCoachContactOpen(false)}
         athlete={athlete}
+      />
+
+      <DashboardLockModal
+        isOpen={isLockModalOpen}
+        onClose={() => setIsLockModalOpen(false)}
+        onUnlock={handleUnlockDashboard}
       />
 
       <GeminiChatModal
