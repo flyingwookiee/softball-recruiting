@@ -1,138 +1,161 @@
 import React, { useState } from 'react';
-import { Play, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Play, Film, Clock, Tag, ExternalLink, X } from 'lucide-react';
 
 export const VideoSection = ({ videos }) => {
-  const [activeVideoModal, setActiveVideoModal] = useState(null);
-  const [filterCategory, setFilterCategory] = useState('All');
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [selectedVideo, setSelectedVideo] = useState(null);
 
   const categories = ['All', 'Full Showcase', 'Defense', 'Batting'];
 
-  const filteredVideos = filterCategory === 'All'
-    ? videos
-    : videos.filter(v => v.category === filterCategory);
+  const filteredVideos = videos.filter(v => 
+    activeCategory === 'All' || v.category === activeCategory
+  );
 
   return (
-    <div style={{ marginBottom: '48px' }}>
-      
-      {/* Header & Filter Controls */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
-        <div>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.03em' }}>
-            Video Highlights & Skills Film
-          </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-            Watch verified showcase film and skill drill evaluations.
-          </p>
-        </div>
-
-        {/* Category Pills */}
-        <div style={{ display: 'flex', gap: '8px', background: 'var(--bg-surface)', padding: '4px', borderRadius: '9999px', border: '1px solid var(--border-color)' }}>
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setFilterCategory(cat)}
-              className="btn btn-sm"
-              style={{
-                background: filterCategory === cat ? 'var(--text-main)' : 'transparent',
-                color: filterCategory === cat ? 'var(--bg-main)' : 'var(--text-muted)',
-                borderRadius: '9999px',
-                fontWeight: filterCategory === cat ? 700 : 500
-              }}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+    <section className="portfolio-section" id="videos">
+      <div className="section-header">
+        <span className="badge badge-primary">Recruiting Video Film</span>
+        <h2 className="section-title" style={{ marginTop: '6px' }}>
+          Video Highlights & Skills Showcase
+        </h2>
+        <p className="section-subtitle">
+          Watch Emily's unedited game film, combine hitting evaluations, and infield footwork reels.
+        </p>
       </div>
 
-      {/* Video Cards Grid */}
-      <div className="grid-cards">
-        {filteredVideos.map(vid => (
-          <div
-            key={vid.id}
-            className="apple-card"
-            style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
-            onClick={() => setActiveVideoModal(vid)}
+      {/* Category Pills */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', overflowX: 'auto' }}>
+        {categories.map(cat => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className="btn btn-sm"
+            style={{
+              background: activeCategory === cat ? 'var(--text-main)' : 'var(--bg-surface)',
+              color: activeCategory === cat ? 'var(--bg-main)' : 'var(--text-muted)',
+              borderRadius: '9999px',
+              fontWeight: activeCategory === cat ? 700 : 500
+            }}
           >
-            
-            {/* Thumbnail */}
-            <div style={{ position: 'relative', height: '220px', overflow: 'hidden', background: '#000' }}>
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Video Cards Grid (Lovable Cinematographer Pattern) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+        {filteredVideos.map(video => (
+          <div
+            key={video.id}
+            className="apple-card"
+            style={{ overflow: 'hidden', cursor: 'pointer', background: 'var(--bg-surface)' }}
+            onClick={() => setSelectedVideo(video)}
+          >
+            {/* Thumbnail Box with Play Overlay */}
+            <div style={{
+              position: 'relative',
+              aspectRatio: '16/9',
+              background: '#050508',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
               <img
-                src={vid.thumbnail}
-                alt={vid.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85, transition: 'transform 0.4s ease' }}
+                src={video.thumbnail}
+                alt={video.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }}
               />
-              
+
+              {/* Center Play Button Overlay */}
               <div style={{
                 position: 'absolute',
-                inset: 0,
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                background: 'rgba(0, 0, 0, 0.65)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)'
+                color: '#ffffff',
+                transition: 'all 0.2s ease'
               }}>
-                <div style={{
-                  width: '60px',
-                  height: '60px',
-                  borderRadius: '50%',
-                  background: 'rgba(255, 255, 255, 0.9)',
-                  color: '#000000',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
-                }}>
-                  <Play size={24} fill="#000000" style={{ marginLeft: '3px' }} />
-                </div>
+                <Play size={24} fill="#ffffff" style={{ marginLeft: '3px' }} />
               </div>
 
-              <span className="badge badge-primary" style={{ position: 'absolute', top: '16px', left: '16px', background: 'rgba(0,0,0,0.7)', color: '#fff', backdropFilter: 'blur(10px)' }}>
-                {vid.category}
-              </span>
+              {/* Top Badges Overlay */}
+              <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px' }}>
+                <span className="badge badge-primary" style={{ fontSize: '0.72rem', backdropFilter: 'blur(10px)' }}>
+                  {video.category}
+                </span>
+              </div>
 
-              <span style={{ position: 'absolute', bottom: '16px', right: '16px', background: 'rgba(0,0,0,0.8)', color: '#fff', fontSize: '0.78rem', padding: '3px 10px', borderRadius: '6px', fontWeight: 600 }}>
-                {vid.duration}
-              </span>
+              <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: 'rgba(0,0,0,0.75)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.74rem', color: '#fff', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Clock size={12} /> {video.duration}
+              </div>
             </div>
 
-            {/* Meta */}
-            <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.3, color: 'var(--text-main)' }}>
-                {vid.title}
+            {/* Video Meta Info */}
+            <div style={{ padding: '20px' }}>
+              <h3 style={{ fontSize: '1.08rem', fontWeight: 800, marginBottom: '6px', lineHeight: 1.3 }}>
+                {video.title}
               </h3>
+              <p style={{ fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '12px' }}>
+                {video.description}
+              </p>
+              <div style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                Watch Video Film <ExternalLink size={13} />
+              </div>
             </div>
-
           </div>
         ))}
       </div>
 
-      {/* Video Modal Player */}
-      {activeVideoModal && (
-        <div className="modal-overlay" onClick={() => setActiveVideoModal(null)}>
-          <div className="apple-card animate-fade-in" style={{ width: '100%', maxWidth: '840px', padding: '24px', background: 'var(--bg-surface)', borderRadius: 'var(--radius-xl)' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <div>
-                <span className="badge badge-primary">{activeVideoModal.category}</span>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: '4px' }}>{activeVideoModal.title}</h3>
-              </div>
-              <button onClick={() => setActiveVideoModal(null)} className="btn btn-secondary btn-sm" style={{ padding: '8px' }}>
-                <X size={18} />
-              </button>
-            </div>
+      {/* Embedded Video Player Modal */}
+      {selectedVideo && (
+        <div className="modal-overlay" onClick={() => setSelectedVideo(null)}>
+          <div
+            className="apple-card animate-fade-in"
+            style={{
+              width: '100%',
+              maxWidth: '800px',
+              padding: '24px',
+              background: 'var(--bg-surface)',
+              position: 'relative'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedVideo(null)}
+              className="btn btn-secondary btn-sm"
+              style={{ position: 'absolute', top: '16px', right: '16px', padding: '6px', zIndex: 10 }}
+            >
+              <X size={18} />
+            </button>
 
-            <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: 'var(--radius-lg)', background: '#000' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '14px' }}>
+              {selectedVideo.title}
+            </h3>
+
+            <div style={{ position: 'relative', aspectRatio: '16/9', borderRadius: 'var(--radius-md)', overflow: 'hidden', background: '#000', marginBottom: '16px' }}>
               <iframe
-                src={activeVideoModal.url}
-                title={activeVideoModal.title}
-                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                width="100%"
+                height="100%"
+                src={selectedVideo.embedUrl}
+                title={selectedVideo.title}
+                frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
             </div>
+
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+              {selectedVideo.description}
+            </p>
           </div>
         </div>
       )}
-
-    </div>
+    </section>
   );
 };

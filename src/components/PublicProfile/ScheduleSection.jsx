@@ -1,69 +1,48 @@
 import React from 'react';
-import { Calendar, MapPin } from 'lucide-react';
+import { Calendar, MapPin, Trophy, Compass } from 'lucide-react';
 
 export const ScheduleSection = ({ schedule }) => {
   return (
-    <div style={{ marginBottom: '48px' }}>
-      
-      <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.03em' }}>
-          Showcase & Travel Ball Itinerary
+    <section className="portfolio-section" id="schedule">
+      <div className="section-header">
+        <span className="badge badge-primary">Recruiting Tournaments</span>
+        <h2 className="section-title" style={{ marginTop: '6px' }}>
+          Upcoming Showcase & Tournament Schedule
         </h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-          Class of 2029 upcoming college exposure tournaments and high school games.
+        <p className="section-subtitle">
+          Where college coaches and recruiters can evaluate Emily playing live during the 2025–2026 season.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gap: '16px' }}>
-        {schedule.map((item, idx) => (
-          <div
-            key={item.id}
-            className="apple-card"
-            style={{
-              padding: '24px',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '20px',
-              alignItems: 'center'
-            }}
-          >
-            
-            {/* Event Name & Team */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+        {schedule.map(event => (
+          <div key={event.id} className="apple-card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: 'var(--bg-surface)' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <span className="badge badge-primary" style={{ fontSize: '0.72rem' }}>{item.team}</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span className="badge badge-primary" style={{ fontSize: '0.72rem' }}>
+                  <Calendar size={13} /> {event.date}
+                </span>
+                <span className="badge badge-outline" style={{ fontSize: '0.72rem' }}>
+                  {event.division}
+                </span>
               </div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                {item.event}
+
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '6px', color: 'var(--text-main)', lineHeight: 1.3 }}>
+                {event.event}
               </h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.86rem', marginTop: '4px' }}>
-                {item.notes}
-              </p>
-            </div>
 
-            {/* Date */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Calendar size={20} color="var(--primary)" />
-              <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 600, textTransform: 'uppercase' }}>DATES</div>
-                <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.95rem' }}>{item.dates}</div>
+              <div style={{ fontSize: '0.88rem', color: 'var(--primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                <MapPin size={15} /> {event.location}
               </div>
             </div>
 
-            {/* Location & Facility */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <MapPin size={20} color="var(--accent)" />
-              <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 600, textTransform: 'uppercase' }}>LOCATION / COMPLEX</div>
-                <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.95rem' }}>{item.location}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.facility}</div>
-              </div>
+            <div style={{ paddingTop: '14px', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+              <span>📍 {event.field || 'Field Location TBA'}</span>
+              <span style={{ color: 'var(--accent)', fontWeight: 700 }}>Alaska Arsenal #14</span>
             </div>
-
           </div>
         ))}
       </div>
-
-    </div>
+    </section>
   );
 };

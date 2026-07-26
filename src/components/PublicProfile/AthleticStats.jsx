@@ -1,106 +1,124 @@
-import React from 'react';
-import { ShieldCheck, Flame, Zap, Activity, Gauge } from 'lucide-react';
+import React, { useState } from 'react';
+import { Zap, Target, Shield, Activity, Info } from 'lucide-react';
 
 export const AthleticStats = ({ athlete }) => {
-  const metricsList = [
-    { label: 'Exit Velocity', value: athlete.metrics.exitVelocity, valNum: 66, max: 80, unit: 'MPH', icon: Flame },
-    { label: 'Overhand Throw', value: athlete.metrics.overhandVelocity, valNum: 62, max: 75, unit: 'MPH', icon: Zap },
-    { label: 'Home to 1st', value: athlete.metrics.homeToFirst, valNum: 2.88, max: 3.5, unit: 'SEC', icon: Activity, isSpeed: true },
-    { label: 'Shuttle Run', value: athlete.metrics.shuttleRun, valNum: 4.65, max: 5.5, unit: 'SEC', icon: Gauge, isSpeed: true }
-  ];
+  const [activeTab, setActiveTab] = useState('combine');
 
-  const seasonStatsList = [
-    { label: 'Batting Avg', value: athlete.seasonStats.battingAverage },
-    { label: 'On Base Pct', value: athlete.seasonStats.onBasePct },
-    { label: 'Slugging Pct', value: athlete.seasonStats.sluggingPct },
-    { label: 'OPS', value: athlete.seasonStats.ops },
-    { label: 'Fielding Pct', value: athlete.seasonStats.fieldingPct },
-    { label: 'Stolen Bases', value: athlete.seasonStats.stolenBases }
+  const tabs = [
+    { id: 'combine', label: 'Verified Combine Metrics', icon: Zap },
+    { id: 'hitting', label: 'Season Hitting Stats', icon: Target },
+    { id: 'fielding', label: 'Fielding & Speed Testing', icon: Shield }
   ];
 
   return (
-    <div style={{ marginBottom: '48px' }}>
-      
-      <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.03em' }}>
-          Verified Athletic Performance
+    <section className="portfolio-section" id="stats">
+      <div className="section-header">
+        <span className="badge badge-primary">Athletic Performance Data</span>
+        <h2 className="section-title" style={{ marginTop: '6px' }}>
+          Verified Athletic Metrics & Stats
         </h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-          Showcase combine measurements and official high school season metrics.
+        <p className="section-subtitle">
+          Evaluated at official regional prospect combines and high school varsity / club competition.
         </p>
       </div>
 
-      {/* Clean Metric Cards Grid */}
-      <div className="grid-stats" style={{ marginBottom: '28px' }}>
-        {metricsList.map((m, idx) => {
-          const IconComp = m.icon;
-          const percentage = m.isSpeed
-            ? Math.min(100, Math.max(20, ((m.max - m.valNum) / (m.max - 2.5)) * 100))
-            : Math.min(100, (m.valNum / m.max) * 100);
+      {/* Interactive Tab Switcher */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', overflowX: 'auto' }}>
+        {tabs.map(tab => {
+          const IconComp = tab.icon;
+          const isActive = activeTab === tab.id;
 
           return (
-            <div
-              key={idx}
-              className="apple-card"
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="btn btn-sm"
               style={{
-                padding: '28px',
-                position: 'relative'
+                background: isActive ? 'var(--text-main)' : 'var(--bg-surface)',
+                color: isActive ? 'var(--bg-main)' : 'var(--text-muted)',
+                border: isActive ? 'none' : '1px solid var(--border-color)',
+                borderRadius: '9999px',
+                fontWeight: isActive ? 700 : 500
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>
-                  {m.label}
-                </span>
-                <IconComp size={18} color="var(--text-dim)" />
-              </div>
-
-              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                {m.value}
-              </div>
-
-              {/* Minimal Progress Bar */}
-              <div style={{ marginTop: '20px', background: 'rgba(255,255,255,0.08)', height: '4px', borderRadius: '9999px', overflow: 'hidden' }}>
-                <div style={{
-                  width: `${percentage}%`,
-                  height: '100%',
-                  background: 'var(--primary)',
-                  borderRadius: '9999px'
-                }} />
-              </div>
-            </div>
+              <IconComp size={15} />
+              {tab.label}
+            </button>
           );
         })}
       </div>
 
-      {/* Season Stats Summary */}
-      <div className="apple-card" style={{ padding: '32px' }}>
-        <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: '20px', color: 'var(--text-muted)' }}>
-          High School & Travel Season Performance
-        </h3>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px' }}>
-          {seasonStatsList.map((st, i) => (
-            <div
-              key={i}
-              style={{
-                background: 'var(--bg-surface)',
-                padding: '20px',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--border-color)',
-                textAlign: 'center'
-              }}
-            >
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-dim)', fontWeight: 600, textTransform: 'uppercase' }}>
-                {st.label}
+      {/* Tab Content Cards */}
+      {activeTab === 'combine' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+          {[
+            { label: 'Bat Exit Velocity', value: athlete.metrics.exitVelocity, note: 'Tee / Live Arm Evaluation' },
+            { label: 'Overhand Throw Velo', value: athlete.metrics.overhandVelocity, note: 'Shortstop to 1B Throw' },
+            { label: 'Home-to-First Time', value: athlete.metrics.homeToFirst, note: 'Laser Timed Sprint' },
+            { label: 'Home-to-Home Time', value: athlete.metrics.homeToHome, note: 'Full Base Turn Sprint' },
+            { label: 'Shuttle Run Agility', value: athlete.metrics.shuttleRun, note: 'Lateral Agility Test' }
+          ].map((m, idx) => (
+            <div key={idx} className="apple-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                {m.label}
               </div>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-main)', marginTop: '4px', letterSpacing: '-0.02em' }}>
-                {st.value}
+              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--primary)', letterSpacing: '-0.03em', marginBottom: '4px' }}>
+                {m.value}
+              </div>
+              <div style={{ fontSize: '0.76rem', color: 'var(--text-dim)' }}>
+                {m.note}
               </div>
             </div>
           ))}
         </div>
-      </div>
+      )}
 
-    </div>
+      {activeTab === 'hitting' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+          {[
+            { label: 'Batting Average (BA)', value: athlete.seasonStats.battingAverage, note: 'Varsity & Club 16U' },
+            { label: 'On-Base Pct (OBP)', value: athlete.seasonStats.onBasePercentage, note: 'High Discipline Plate Appearances' },
+            { label: 'Slugging Pct (SLG)', value: athlete.seasonStats.sluggingPercentage, note: 'Power & Extra Base Hits' },
+            { label: 'Stolen Bases (SB)', value: athlete.seasonStats.stolenBases, note: 'High Success Base Running' },
+            { label: 'Runs Batted In (RBI)', value: athlete.seasonStats.rbis, note: 'Clutch Hitting in Scoring Position' }
+          ].map((m, idx) => (
+            <div key={idx} className="apple-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                {m.label}
+              </div>
+              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--accent)', letterSpacing: '-0.03em', marginBottom: '4px' }}>
+                {m.value}
+              </div>
+              <div style={{ fontSize: '0.76rem', color: 'var(--text-dim)' }}>
+                {m.note}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {activeTab === 'fielding' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+          {[
+            { label: 'Fielding Percentage', value: athlete.seasonStats.fieldingPercentage, note: 'Shortstop / 2B / Utility' },
+            { label: 'Primary Defensive Spot', value: athlete.primaryPosition, note: 'Team Infield Captain' },
+            { label: 'Secondary Defensive Spot', value: athlete.secondaryPosition, note: '2B & Outfield Versatility' },
+            { label: 'Dominant Hand', value: `${athlete.bats} / ${athlete.throws}`, note: 'Right Handed Throw & Bat' }
+          ].map((m, idx) => (
+            <div key={idx} className="apple-card" style={{ padding: '24px', background: 'var(--bg-surface)' }}>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+                {m.label}
+              </div>
+              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--gold)', letterSpacing: '-0.03em', marginBottom: '4px' }}>
+                {m.value}
+              </div>
+              <div style={{ fontSize: '0.76rem', color: 'var(--text-dim)' }}>
+                {m.note}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 };

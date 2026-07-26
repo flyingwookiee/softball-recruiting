@@ -5,6 +5,7 @@ import { AthleticStats } from './components/PublicProfile/AthleticStats';
 import { VideoSection } from './components/PublicProfile/VideoSection';
 import { ScheduleSection } from './components/PublicProfile/ScheduleSection';
 import { AcademicsSection } from './components/PublicProfile/AcademicsSection';
+import { CoachEndorsements } from './components/PublicProfile/CoachEndorsements';
 import { CoachContactModal } from './components/PublicProfile/CoachContactModal';
 
 import { DashboardHeader } from './components/Dashboard/DashboardHeader';
@@ -30,7 +31,6 @@ export function App() {
 
   // Security Lock State for Internal Dashboard
   const [isUnlocked, setIsUnlocked] = useState(() => {
-    // Check URL parameters for ?dashboard=true or local session
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('dashboard') === 'true' || localStorage.getItem('softball_unlocked_session') === 'true';
   });
@@ -181,13 +181,13 @@ export function App() {
         {activeView === 'public' && (
           <div className="animate-fade-in">
             
-            {/* Profile Hero Section */}
+            {/* Hero Section & Statement of Purpose */}
             <ProfileHero
               athlete={athlete}
               onOpenContactModal={() => setIsCoachContactOpen(true)}
             />
 
-            {/* Athletic Metrics & Stats */}
+            {/* Athletic Metrics & Performance Stats */}
             <div id="stats">
               <AthleticStats athlete={athlete} />
             </div>
@@ -205,6 +205,11 @@ export function App() {
             {/* Academic Credentials */}
             <div id="academics">
               <AcademicsSection athlete={athlete} />
+            </div>
+
+            {/* Coach Endorsements & Character References */}
+            <div id="coaches">
+              <CoachEndorsements />
             </div>
 
           </div>
