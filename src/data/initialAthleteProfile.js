@@ -1,6 +1,6 @@
 export const initialAthleteProfile = {
   // Personal Info
-  name: "Maya Miller",
+  name: "Emily Sain",
   gradYear: "2029",
   classLevel: "Sophomore (10th Grade)",
   highSchool: "Chugiak High School",
@@ -130,13 +130,13 @@ export const initialAthleteProfile = {
 
   // Contact Details
   contact: {
-    email: "maya.miller2029@gmail.com",
+    email: "emily.sain2029@gmail.com",
     phone: "(907) 555-0149",
     parentName: "Parents / Guardian",
-    parentEmail: "parents.miller907@gmail.com",
+    parentEmail: "parents.sain907@gmail.com",
     parentPhone: "(907) 555-0188",
-    twitter: "@MayaMiller2029",
-    instagram: "@maya.softball2029",
-    hudl: "hudl.com/profile/mayamiller2029"
+    twitter: "@EmilySain2029",
+    instagram: "@emily.softball2029",
+    hudl: "hudl.com/profile/emilysain2029"
   }
 };

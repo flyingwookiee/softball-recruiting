@@ -2,13 +2,12 @@ import { initialAthleteProfile } from '../data/initialAthleteProfile';
 import { collegesDatabase } from '../data/collegesDatabase';
 
 const STORAGE_KEYS = {
-  ATHLETE_PROFILE: 'softball_recruiting_profile_v1',
+  ATHLETE_PROFILE: 'softball_recruiting_profile_v2',
   TARGET_COLLEGES: 'softball_recruiting_targets_v1',
   GEMINI_API_KEY: 'softball_recruiting_gemini_key_v1',
   CHECKLIST_PROGRESS: 'softball_recruiting_checklist_v1'
 };
 
-// Initial target list with a few pre-loaded colleges for immediate showcase
 const initialTargets = [
   {
     ...collegesDatabase[0], // Western Washington University
@@ -75,7 +74,7 @@ export const storageService = {
   addTarget: (college) => {
     const current = storageService.getTargets();
     if (current.some(t => t.id === college.id || t.name === college.name)) {
-      return current; // already exists
+      return current;
     }
     const newTarget = {
       ...college,
